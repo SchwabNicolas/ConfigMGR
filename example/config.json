@@ -1,0 +1,60 @@
+{
+  "constants": {
+    "DB_NAME": "testDb",
+    "SQL_USER": "root",
+    "SQL_HOST": "localhost",
+    "SQL_PASSWORD": "123456",
+    "ROOT_PATH": "C:/wamp64/www/ConfigMGR",
+    "PROJECT_PATH": "{ROOT_PATH}/example",
+    "COMPOSER_VENDOR_PATH": "{ROOT_PATH}/vendor",
+    "ROOT": "http://test/",
+    "CONNECTION_STRING": "Server={SQL_HOST}; Database={DB_NAME}; User Id={SQL_USER}; Password={SQL_PASSWORD}",
+    "MAX_CONNECTIONS": 12,
+    "COCA_COLA_PRICE": 0.75,
+    "DEBUG": true,
+    "AUTHORIZED_HOSTS": [
+      "localhost",
+      "php.org",
+      "khodok.xyz"
+    ]
+  },
+  "variables": {
+    "city_table": [
+      {
+        "name": "New York",
+        "country": "USA",
+        "continent": "North America",
+        "population": 8175133
+      },
+      {
+        "name": "Osaka",
+        "country": "Japan",
+        "continent": "Asia",
+        "population": 2668586
+      },
+      {
+        "name": "Bern",
+        "country": "Switzerland",
+        "continent": "Europe",
+        "population": 133791
+      },
+      {
+        "name": "Wellington",
+        "country": "New Zealand",
+        "continent": "Oceania",
+        "population": 215400
+      },
+      {
+        "name": "Abidjan",
+        "country": "Ivory Coast",
+        "continent": "Africa",
+        "population": 3677115
+      }
+    ],
+    "circle": {
+      "x": 25,
+      "y": 75,
+      "radius": 23.5
+    }
+  }
+}
