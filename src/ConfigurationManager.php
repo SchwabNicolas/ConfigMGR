@@ -9,6 +9,8 @@ class ConfigurationManager
     private array $computed_values = array();
     private static ?ConfigurationManager $instance = null;
 
+    // TODO Add phpDoc
+
     /**
      * Private ConfigurationManager constructor.
      * @author Nicolas Schwab
@@ -172,6 +174,7 @@ class ConfigurationManager
         return "";
     }
 
+    // TODO : Finish the system
     private function replace_value($name, $value)
     {
         if ($this->has_markup($value)) {
