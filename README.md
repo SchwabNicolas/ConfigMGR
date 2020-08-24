@@ -14,6 +14,9 @@ A constant can be defined with curly brackets "{ }".
 - [x] Defining constants from configuration
 - [x] Format content of a configuration key with another
 - [ ] Format content of multiple configuration keys with another
+- [ ] Composer package
+- [ ] Search to format content with already defined constants
 - [ ] Crawl recursively through tables to format content with configuration keys
 - [ ] Load tables from CSV
 - [ ] Load objects from JSON
+- [ ] Monolog integration
