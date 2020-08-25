@@ -155,10 +155,9 @@ class ConfigurationManager
     {
         foreach ($this->config as $name => $value) {
             if (gettype($value) == "string") {
-                $this->replace_value($name, $value);
-            } else {
-                $this->add_computed_value($name, $value);
+                $value = $this->replace_value($name, $value);
             }
+            $this->add_computed_value($name, $value);
         }
     }
 
@@ -169,7 +168,7 @@ class ConfigurationManager
 
     private function extract_name_from_markup($string)
     {
-        if(preg_match("/{(.*?)}/", $string, $matches))
+        if (preg_match("/{(.*?)}/", $string, $matches))
             return str_replace(["{", "}"], "", $matches[0]);
         return "";
     }
@@ -182,6 +181,9 @@ class ConfigurationManager
 
             if ($this->computed_values[$extracted_name] && isset($this->computed_values[$extracted_name])) {
                 $value = $this->replace_markup($extracted_name, $value);
+                if ($this->has_markup($value)) {
+                    $value = $this->replace_value($name, $value);
+                }
             } else {
                 $this->replace_value($extracted_name, $this->get_value_from_config_name($extracted_name));
             }
