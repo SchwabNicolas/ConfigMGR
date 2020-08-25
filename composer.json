@@ -1,15 +1,28 @@
 {
-   "name": "nschwab/configmgr",
-   "description": "A PHP configuration manager.",
-   "type": "library",
-   "keywords": ["configuration", "configuration manager", "config", "json"],
-   "homepage": "https://github.com/SchwabNicolas/ConfigMGR",
-   "license": "MIT",
-   "authors": {
+  "name": "nschwab/configmgr",
+  "description": "A PHP configuration manager.",
+  "type": "library",
+  "keywords": [
+    "configuration",
+    "configuration manager",
+    "config",
+    "json"
+  ],
+  "homepage": "https://github.com/SchwabNicolas/ConfigMGR",
+  "license": "MIT",
+  "authors": [
+    {
       "name": "Nicolas Schwab",
-	  "email": "nicolas.schwab@ceff.ch"
-   },
-   "require": {
-      "php": ">=7.4.0"
-   }
+      "email": "nicolas.schwab@ceff.ch",
+      "homepage": "https://github.com/SchwabNicolas"
+    }
+  ],
+  "require": {
+    "php": ">=7.4.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "ConfigurationManager\\Core\\": "src/"
+    }
+  }
 }

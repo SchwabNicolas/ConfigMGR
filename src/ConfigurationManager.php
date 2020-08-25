@@ -1,5 +1,7 @@
 <?php
 
+namespace ConfigurationManager\Core;
+
 class ConfigurationManager
 {
     private string $path;
