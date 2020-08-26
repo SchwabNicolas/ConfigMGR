@@ -9,6 +9,7 @@
     "COMPOSER_VENDOR_PATH": "{ROOT_PATH}/vendor",
     "ROOT": "http://test/",
     "CONNECTION_STRING": "Server={SQL_HOST}; Database={DB_NAME}; User Id={SQL_USER}; Password={SQL_PASSWORD}",
+    "VERSION": "v1.7.3-alpha for {PHP_VERSION}",
     "MAX_CONNECTIONS": 12,
     "COCA_COLA_PRICE": 0.75,
     "DEBUG": true,

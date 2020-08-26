@@ -18,11 +18,12 @@
     }
   ],
   "require": {
-    "php": ">=7.4.0"
+    "php": ">=7.4.0",
+    "ext-json": "*"
   },
   "autoload": {
     "psr-4": {
-      "ConfigurationManager\\Core\\": "src/"
+      "ConfigMGR\\": "src/"
     }
   }
 }
