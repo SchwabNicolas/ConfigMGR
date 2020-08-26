@@ -307,12 +307,42 @@ class ConfigurationManager
     }
 
     /**
+     * Gets a variable value by name.
+     * @author Nicolas Schwab
+     * @email nicolas.schwab@ceff.ch
+     */
+    public function get_variable($name)
+    {
+        return $this->variables_list[$name];
+    }
+
+    /** Sets a variable value by name
+     * @param $name string the key name
+     * @param $new_value mixed the key value
+     */
+    public function set_variable($name, $new_value)
+    {
+        $this->variables_list[$name] = $new_value;
+    }
+
+    /**
+     * Gets a constant value by name.
+     * @author Nicolas Schwab
+     * @email nicolas.schwab@ceff.ch
+     */
+    public function get_constant($name)
+    {
+        return constant($this->constants_list[$name]);
+    }
+
+    /**
      * Loaded getter.
      * @return bool loaded
      * @author Nicolas Schwab
      * @email nicolas.schwab@ceff.ch
      */
-    public function is_loaded() {
+    public function is_loaded()
+    {
         return $this->loaded;
     }
 

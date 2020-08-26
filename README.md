@@ -1,5 +1,14 @@
 # ConfigMGR
-ConfigMGR is a Configuration Manager for PHP. It is meant to remove all these old ``config.php`` files in a simple way.
+ConfigMGR is a Configuration Manager for PHP. It is meant to remove all these old ``config.php`` files in a simple and efficient way.
+
+## Install with Composer
+You can install this library with [Composer](https://getcomposer.org).
+```
+composer require nschwab/configmgr 
+```
+
+## Simple example
+You can find a simple example in the ``/example/`` directory.
 
 ## String interpolation
 String interpolation is possible within your config file. By using curly brackets "{ }", you can specify any variable or constants defined in your config. It will look for constants defined by the system before checking for configuration keys.
