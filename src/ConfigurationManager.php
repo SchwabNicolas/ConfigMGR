@@ -12,6 +12,9 @@ class ConfigurationManager
     private bool $loaded = false;
     private static ?ConfigurationManager $instance = null;
 
+    private string $opening_markup_string = "{";
+    private string $closing_markup_string = "}";
+
     /**
      * Private ConfigurationManager constructor.
      * @author Nicolas Schwab
@@ -88,8 +91,12 @@ class ConfigurationManager
         if (isset($this->path)) {
             $config = $this->load_json_config();
 
-            $constants = $this->load_constants_from_object($config->constants);
-            $variables = $this->load_variables_from_object($config->variables);
+            if (isset($config->configmgr) && !empty($config->configmgr))
+                $this->load_configMGR_config($config->configmgr);
+            if (isset($config->constants) && !empty($config->constants))
+                $constants = $this->load_constants_from_object($config->constants);
+            if (isset($config->variables) && !empty($config->variables))
+                $variables = $this->load_variables_from_object($config->variables);
 
             $this->config = array_merge($constants, $variables);
 
@@ -101,6 +108,25 @@ class ConfigurationManager
             $this->define_constants();
 
             $loaded = true;
+        }
+    }
+
+    /** Load ConfigMGR configuration
+     * @param $config array configuration
+     * @author Nicolas Schwab
+     * @email nicolas.schwab@ceff.ch
+     */
+    public function load_configMGR_config($config)
+    {
+        if (isset($config->opening_markup_string)
+            && !ctype_space($config->opening_markup_string)
+            && !$config->opening_markup_string == "") {
+            $this->opening_markup_string = $config->opening_markup_string;
+        }
+        if (isset($config->closing_markup_string)
+            && !ctype_space($config->closing_markup_string)
+            && !$config->closing_markup_string == "") {
+            $this->closing_markup_string = $config->closing_markup_string;
         }
     }
 
@@ -208,8 +234,8 @@ class ConfigurationManager
      */
     private function extract_name_from_markup($string)
     {
-        if (preg_match("/{(.*?)}/", $string, $matches))
-            return str_replace(["{", "}"], "", $matches[0]);
+        if (preg_match("/" . $this->opening_markup_string . "(.*?)" . $this->closing_markup_string . "/", $string, $matches))
+            return str_replace([$this->opening_markup_string, $this->closing_markup_string], "", $matches[0]);
         return "";
     }
 
@@ -227,7 +253,7 @@ class ConfigurationManager
 
             if (defined($extracted_name)) {
                 $value = $this->replace_markup($extracted_name, $value);
-            } else if ($this->computed_values[$extracted_name] && isset($this->computed_values[$extracted_name])) {
+            } else if (isset($this->computed_values[$extracted_name]) && $this->computed_values[$extracted_name]) {
                 $value = $this->replace_markup($extracted_name, $value);
                 if ($this->has_markup($value)) {
                     $value = $this->replace_value($name, $value);
@@ -248,7 +274,7 @@ class ConfigurationManager
      */
     private function replace_markup($extracted_name, $string)
     {
-        $to_replace = "{" . $extracted_name . "}";
+        $to_replace = $this->opening_markup_string . $extracted_name . $this->closing_markup_string;
         $value = defined($extracted_name) ? constant($extracted_name) : $this->computed_values[$extracted_name];
 
         $replaced_string = str_replace($to_replace, $value, $string);
@@ -268,7 +294,7 @@ class ConfigurationManager
      */
     private function has_markup($string)
     {
-        return preg_match('/{(.*?)}/', $string);
+        return preg_match("/" . $this->opening_markup_string . "(.*?)" . $this->closing_markup_string . "/", $string);
     }
 
     /** Gets a value from a key name.

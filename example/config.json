@@ -1,4 +1,8 @@
 {
+  "configmgr": {
+    "opening_markup_string": "",
+    "closing_markup_string": ""
+  },
   "constants": {
     "DB_NAME": "testDb",
     "SQL_USER": "root",

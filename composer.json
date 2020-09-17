@@ -19,7 +19,8 @@
   ],
   "require": {
     "php": ">=7.4.0",
-    "ext-json": "*"
+    "ext-json": "*",
+    "ext-ctype": "*"
   },
   "autoload": {
     "psr-4": {
