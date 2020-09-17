@@ -13,7 +13,7 @@
     "COMPOSER_VENDOR_PATH": "{ROOT_PATH}/vendor",
     "ROOT": "http://test/",
     "CONNECTION_STRING": "Server={SQL_HOST}; Database={DB_NAME}; User Id={SQL_USER}; Password={SQL_PASSWORD}",
-    "VERSION": "v1.7.3-alpha for {PHP_VERSION}",
+    "VERSION": "v1.7.3-alpha for PHP {PHP_VERSION}",
     "MAX_CONNECTIONS": 12,
     "COCA_COLA_PRICE": 0.75,
     "DEBUG": true,
@@ -60,6 +60,20 @@
       "x": 25,
       "y": 75,
       "radius": 23.5
-    }
+    },
+    "array": [
+      "Database Name : {DB_NAME}",
+      "SQL Host : {SQL_HOST}",
+      "SQL Host : {SQL_USER}",
+      "SQL Password : {SQL_PASSWORD}",
+      [
+        "string",
+        "{ROOT_PATH}",
+        {
+          "test": "TESTME",
+          "leMonke": "stinky"
+        }
+      ]
+    ]
   }
 }
