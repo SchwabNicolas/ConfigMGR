@@ -210,20 +210,11 @@ class ConfigurationManager
         foreach ($this->config as $name => $value) {
             if (gettype($value) == "string") {
                 $value = $this->replace_value($name, $value);
+            } else if (gettype($value) == "array") {
+                $value = $this->array_crawl($name, $value);
             }
             $this->add_computed_value($name, $value);
         }
-    }
-
-    /** Add a key in computed values array.
-     * @param $name string name of the key
-     * @param $value mixed value of the key
-     * @author Nicolas Schwab
-     * @email nicolas.schwab@ceff.ch
-     */
-    private function add_computed_value($name, $value)
-    {
-        $this->computed_values[$name] = $value;
     }
 
     /** Extract the first markup name of a string.
@@ -263,7 +254,27 @@ class ConfigurationManager
             }
         }
 
-        $this->computed_values[$name] = $value;
+        return $value;
+    }
+
+    /** Crawls recursively through arrays.
+     * @param $name string key name
+     * @param $value mixed initial value
+     * @return mixed final value
+     * @author Nicolas Schwab
+     * @email nicolas.schwab@ceff.ch
+     */
+    private function array_crawl($name, $value)
+    {
+        $val = null;
+        foreach ($value as $key => $val) {
+            if (gettype($val) == "string") {
+                $val = $this->replace_value($name, $val);
+            } else if (gettype($val) == "array") {
+                $val = $this->array_crawl($name, $val);
+            }
+            $value[$key] = $val;
+        }
         return $value;
     }
 
@@ -271,6 +282,8 @@ class ConfigurationManager
      * @param $extracted_name string name extracted from markup
      * @param $string string value
      * @return string|string[] new value
+     * @author Nicolas Schwab
+     * @email nicolas.schwab@ceff.ch
      */
     private function replace_markup($extracted_name, $string)
     {
@@ -283,14 +296,26 @@ class ConfigurationManager
             $this->replace_markup($this->extract_name_from_markup($replaced_string), $replaced_string);
         }
 
-
         return $replaced_string;
+    }
+
+    /** Add a key in computed values array.
+     * @param $name string name of the key
+     * @param $value mixed value of the key
+     * @author Nicolas Schwab
+     * @email nicolas.schwab@ceff.ch
+     */
+    private function add_computed_value($name, $value)
+    {
+        $this->computed_values[$name] = $value;
     }
 
     /**
      * Return the number of markups if the string has markup.
      * @param $string string string
      * @return false|int number of markups
+     * @author Nicolas Schwab
+     * @email nicolas.schwab@ceff.ch
      */
     private function has_markup($string)
     {
@@ -300,6 +325,8 @@ class ConfigurationManager
     /** Gets a value from a key name.
      * @param $name string key name
      * @return mixed value
+     * @author Nicolas Schwab
+     * @email nicolas.schwab@ceff.ch
      */
     private function get_value_from_key_name($name)
     {
@@ -345,6 +372,8 @@ class ConfigurationManager
     /** Sets a variable value by name
      * @param $name string the key name
      * @param $new_value mixed the key value
+     * @author Nicolas Schwab
+     * @email nicolas.schwab@ceff.ch
      */
     public function set_variable($name, $new_value)
     {
@@ -374,7 +403,8 @@ class ConfigurationManager
 
     /**
      * DEBUG
-     *
+     * @author Nicolas Schwab
+     * @email nicolas.schwab@ceff.ch
      */
     public function get_constants_table()
     {
@@ -400,7 +430,8 @@ class ConfigurationManager
 
     /**
      * DEBUG
-     *
+     * @author Nicolas Schwab
+     * @email nicolas.schwab@ceff.ch
      */
     public function get_variables_table()
     {

@@ -35,7 +35,7 @@ String interpolation is possible within your config file. By using curly bracket
 - [x] Composer package
 - [x] Search to format content with already defined constants
 - [x] Custom markup
-- [ ] Crawl recursively through tables to format content with configuration keys
+- [x] Crawl recursively through tables to format content with configuration keys
 - [ ] Load tables from CSV
 - [ ] Load objects from JSON
 - [ ] Monolog integration
