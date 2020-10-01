@@ -2,6 +2,10 @@
 
 namespace ConfigMGR;
 
+use ConfigMGR\Exceptions\FileNotReadableException;
+use ConfigMGR\Exceptions\JsonNotValidException;
+use ConfigMGR\Exceptions\SelfReferenceException;
+
 class ConfigurationManager
 {
     private string $path;
@@ -70,15 +74,23 @@ class ConfigurationManager
     /**
      * Open configuration from a JSON file.
      * @return mixed the deserialized JSON file
+     * @throws JsonNotValidException|FileNotReadableException
      * @author Nicolas Schwab
      * @email nicolas.schwab@ceff.ch
      */
     private function load_json_config()
     {
+        if(!is_readable($this->path)) {
+            throw new FileNotReadableException();
+        }
         $config_file = fopen($this->path, "r");
         $file_content = fread($config_file, filesize($this->path));
         fclose($config_file);
-        return json_decode($file_content);
+        $json = json_decode($file_content);
+        if($json === null) {
+            throw new JsonNotValidException();
+        }
+        return $json;
     }
 
     /**
@@ -90,6 +102,9 @@ class ConfigurationManager
     {
         if (isset($this->path)) {
             $config = $this->load_json_config();
+
+            $constants = null;
+            $variables = null;
 
             if (isset($config->configmgr) && !empty($config->configmgr))
                 $this->load_configMGR_config($config->configmgr);
@@ -110,7 +125,8 @@ class ConfigurationManager
         }
     }
 
-    /** Load ConfigMGR configuration
+    /**
+     * Load ConfigMGR configuration.
      * @param $config array configuration
      * @author Nicolas Schwab
      * @email nicolas.schwab@ceff.ch
@@ -179,7 +195,7 @@ class ConfigurationManager
      * @author Nicolas Schwab
      * @email nicolas.schwab@ceff.ch
      */
-    private function match_constants_with_config_names($constants)
+    private function match_constants_with_config_names(object $constants)
     {
         foreach ($constants as $name => $value) {
             $this->constants_list[$name] = $this->computed_values[$name];
@@ -192,7 +208,7 @@ class ConfigurationManager
      * @author Nicolas Schwab
      * @email nicolas.schwab@ceff.ch
      */
-    private function match_variables_with_config_names($variables)
+    private function match_variables_with_config_names(object $variables)
     {
         foreach ($variables as $name => $value) {
             $this->variables_list[$name] = $this->computed_values[$name];
@@ -212,7 +228,8 @@ class ConfigurationManager
         }
     }
 
-    /** Extract the first markup name of a string.
+    /**
+     * Extract the first markup name of a string.
      * @param $string string string
      * @return string|string[] markup
      * @author Nicolas Schwab
@@ -225,10 +242,12 @@ class ConfigurationManager
         return "";
     }
 
-    /** Crawls through different kinds of objects.
+    /**
+     * Crawls through different kinds of objects.
      * @param $name string name of the origin object
      * @param $val mixed value of the currently crawled through object.
      * @return mixed|string|string[]
+     * @throws SelfReferenceException
      * @author Nicolas Schwab
      * @email nicolas.schwab@ceff.ch
      */
@@ -243,10 +262,12 @@ class ConfigurationManager
         return $val;
     }
 
-    /** Replace markup by a value.
+    /**
+     * Replace markup by a value.
      * @param $name string key name
      * @param $value mixed key value
      * @return mixed|string|string[] new key value
+     * @throws SelfReferenceException
      * @author Nicolas Schwab
      * @email nicolas.schwab@ceff.ch
      */
@@ -254,7 +275,9 @@ class ConfigurationManager
     {
         if ($this->has_markup($value)) {
             $extracted_name = $this->extract_name_from_markup($value);
-
+            if($extracted_name == $name) {
+                throw new SelfReferenceException();
+            }
             if (defined($extracted_name)) {
                 $value = $this->replace_markup($extracted_name, $value);
             } else if (isset($this->computed_values[$extracted_name]) && $this->computed_values[$extracted_name]) {
@@ -270,10 +293,12 @@ class ConfigurationManager
         return $value;
     }
 
-    /** Crawls recursively through arrays.
+    /**
+     * Crawls recursively through arrays.
      * @param $name string key name
      * @param $value mixed initial value
      * @return mixed final value
+     * @throws SelfReferenceException
      * @author Nicolas Schwab
      * @email nicolas.schwab@ceff.ch
      */
@@ -285,10 +310,12 @@ class ConfigurationManager
         return $value;
     }
 
-    /** Crawls recursively through objects.
+    /**
+     * Crawls recursively through objects.
      * @param $name string key name
      * @param $value mixed initial value
      * @return mixed final value
+     * @throws SelfReferenceException
      * @author Nicolas Schwab
      * @email nicolas.schwab@ceff.ch
      */
@@ -299,7 +326,8 @@ class ConfigurationManager
         return $value;
     }
 
-    /** Replace markups in a key by the value of another or a constant.
+    /**
+     * Replace markups in a key by the value of another or a constant.
      * @param $extracted_name string name extracted from markup
      * @param $string string value
      * @return string|string[] new value
@@ -320,7 +348,8 @@ class ConfigurationManager
         return $replaced_string;
     }
 
-    /** Add a key in computed values array.
+    /**
+     * Add a key in computed values array.
      * @param $name string name of the key
      * @param $value mixed value of the key
      * @author Nicolas Schwab
@@ -343,7 +372,8 @@ class ConfigurationManager
         return preg_match("/" . $this->opening_markup_string . "(.*?)" . $this->closing_markup_string . "/", $string);
     }
 
-    /** Gets a value from a key name.
+    /**
+     * Gets a value from a key name.
      * @param $name string key name
      * @return mixed value
      * @author Nicolas Schwab
@@ -390,7 +420,8 @@ class ConfigurationManager
         return $this->variables_list[$name];
     }
 
-    /** Sets a variable value by name
+    /**
+     * Sets a variable value by name
      * @param $name string the key name
      * @param $new_value mixed the key value
      * @author Nicolas Schwab
