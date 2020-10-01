@@ -195,7 +195,7 @@ class ConfigurationManager
      * @author Nicolas Schwab
      * @email nicolas.schwab@ceff.ch
      */
-    private function match_constants_with_config_names(object $constants)
+    private function match_constants_with_config_names($constants)
     {
         foreach ($constants as $name => $value) {
             $this->constants_list[$name] = $this->computed_values[$name];
@@ -208,7 +208,7 @@ class ConfigurationManager
      * @author Nicolas Schwab
      * @email nicolas.schwab@ceff.ch
      */
-    private function match_variables_with_config_names(object $variables)
+    private function match_variables_with_config_names($variables)
     {
         foreach ($variables as $name => $value) {
             $this->variables_list[$name] = $this->computed_values[$name];
