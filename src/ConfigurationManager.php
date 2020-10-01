@@ -5,6 +5,7 @@ namespace ConfigMGR;
 use ConfigMGR\Exceptions\FileNotReadableException;
 use ConfigMGR\Exceptions\JsonNotValidException;
 use ConfigMGR\Exceptions\SelfReferenceException;
+use ConfigMGR\StringInterpolationFormatter;
 
 class ConfigurationManager
 {
@@ -16,8 +17,11 @@ class ConfigurationManager
     private bool $loaded = false;
     private static ?ConfigurationManager $instance = null;
 
-    private string $opening_markup_string = "{";
-    private string $closing_markup_string = "}";
+    public static string $open_markup = "{";
+    public static string $close_markup = "}";
+
+    public static string $open_string_interpolation = "{%";
+    public static string $close_string_interpolation = "%}";
 
     /**
      * Private ConfigurationManager constructor.
@@ -80,14 +84,14 @@ class ConfigurationManager
      */
     private function load_json_config()
     {
-        if(!is_readable($this->path)) {
+        if (!is_readable($this->path)) {
             throw new FileNotReadableException();
         }
         $config_file = fopen($this->path, "r");
         $file_content = fread($config_file, filesize($this->path));
         fclose($config_file);
         $json = json_decode($file_content);
-        if($json === null) {
+        if ($json === null) {
             throw new JsonNotValidException();
         }
         return $json;
@@ -133,15 +137,26 @@ class ConfigurationManager
      */
     public function load_configMGR_config($config)
     {
-        if (isset($config->opening_markup_string)
-            && !ctype_space($config->opening_markup_string)
-            && !$config->opening_markup_string == "") {
-            $this->opening_markup_string = $config->opening_markup_string;
+        if (isset($config->open_markup)
+            && !ctype_space($config->open_markup)
+            && !$config->open_markup == "") {
+            $this::$open_markup = $config->open_markup;
         }
-        if (isset($config->closing_markup_string)
-            && !ctype_space($config->closing_markup_string)
-            && !$config->closing_markup_string == "") {
-            $this->closing_markup_string = $config->closing_markup_string;
+        if (isset($config->close_markup)
+            && !ctype_space($config->close_markup)
+            && !$config->close_markup == "") {
+            $this::$close_markup = $config->close_markup;
+        }
+
+        if (isset($config->open_string_interpolation)
+            && !ctype_space($config->open_string_interpolation)
+            && !$config->open_string_interpolation == "") {
+            $this::$open_string_interpolation = $config->open_string_interpolation;
+        }
+        if (isset($config->close_string_interpolation)
+            && !ctype_space($config->close_string_interpolation)
+            && !$config->close_string_interpolation == "") {
+            $this::$close_string_interpolation = $config->close_string_interpolation;
         }
     }
 
@@ -229,20 +244,6 @@ class ConfigurationManager
     }
 
     /**
-     * Extract the first markup name of a string.
-     * @param $string string string
-     * @return string|string[] markup
-     * @author Nicolas Schwab
-     * @email nicolas.schwab@ceff.ch
-     */
-    private function extract_name_from_markup($string)
-    {
-        if (preg_match("/" . $this->opening_markup_string . "(.*?)" . $this->closing_markup_string . "/", $string, $matches))
-            return str_replace([$this->opening_markup_string, $this->closing_markup_string], "", $matches[0]);
-        return "";
-    }
-
-    /**
      * Crawls through different kinds of objects.
      * @param $name string name of the origin object
      * @param $val mixed value of the currently crawled through object.
@@ -251,7 +252,8 @@ class ConfigurationManager
      * @author Nicolas Schwab
      * @email nicolas.schwab@ceff.ch
      */
-    private function crawl($name, $val) {
+    private function crawl($name, $val)
+    {
         if (gettype($val) == "string") {
             $val = $this->replace_value($name, $val);
         } else if (gettype($val) == "array") {
@@ -273,16 +275,17 @@ class ConfigurationManager
      */
     private function replace_value($name, $value)
     {
-        if ($this->has_markup($value)) {
-            $extracted_name = $this->extract_name_from_markup($value);
-            if($extracted_name == $name) {
+        if (StringInterpolationFormatter::has_string_interpolation($value)) {
+            $extracted_name = StringInterpolationFormatter::extract_name_from_string_interpolation($value);
+            if ($extracted_name == $name) {
                 throw new SelfReferenceException();
             }
             if (defined($extracted_name)) {
-                $value = $this->replace_markup($extracted_name, $value);
+                $value = defined($extracted_name) ? constant($extracted_name) : $this->computed_values[$extracted_name];
+                $value = StringInterpolationFormatter::replace_markup($extracted_name, $value, constant($extracted_name));
             } else if (isset($this->computed_values[$extracted_name]) && $this->computed_values[$extracted_name]) {
-                $value = $this->replace_markup($extracted_name, $value);
-                if ($this->has_markup($value)) {
+                $value = StringInterpolationFormatter::replace_markup($extracted_name, $value, $this->computed_values[$extracted_name]);
+                if (StringInterpolationFormatter::has_string_interpolation($value)) {
                     $value = $this->replace_value($name, $value);
                 }
             } else {
@@ -319,33 +322,12 @@ class ConfigurationManager
      * @author Nicolas Schwab
      * @email nicolas.schwab@ceff.ch
      */
-    private function object_crawl($name, $value) {
+    private function object_crawl($name, $value)
+    {
         foreach ($value as $key => $val) {
             $value->$key = $this->crawl($name, $val);
         }
         return $value;
-    }
-
-    /**
-     * Replace markups in a key by the value of another or a constant.
-     * @param $extracted_name string name extracted from markup
-     * @param $string string value
-     * @return string|string[] new value
-     * @author Nicolas Schwab
-     * @email nicolas.schwab@ceff.ch
-     */
-    private function replace_markup($extracted_name, $string)
-    {
-        $to_replace = $this->opening_markup_string . $extracted_name . $this->closing_markup_string;
-        $value = defined($extracted_name) ? constant($extracted_name) : $this->computed_values[$extracted_name];
-
-        $replaced_string = str_replace($to_replace, $value, $string);
-
-        if ($this->has_markup($replaced_string)) {
-            $this->replace_markup($this->extract_name_from_markup($replaced_string), $replaced_string);
-        }
-
-        return $replaced_string;
     }
 
     /**
@@ -358,18 +340,6 @@ class ConfigurationManager
     private function add_computed_value($name, $value)
     {
         $this->computed_values[$name] = $value;
-    }
-
-    /**
-     * Return the number of markups if the string has markup.
-     * @param $string string string
-     * @return false|int number of markups
-     * @author Nicolas Schwab
-     * @email nicolas.schwab@ceff.ch
-     */
-    private function has_markup($string)
-    {
-        return preg_match("/" . $this->opening_markup_string . "(.*?)" . $this->closing_markup_string . "/", $string);
     }
 
     /**
