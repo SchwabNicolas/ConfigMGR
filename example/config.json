@@ -17,6 +17,7 @@
     "MAX_CONNECTIONS": 12,
     "COCA_COLA_PRICE": 0.75,
     "DEBUG": true,
+    "CHOMAGE": true,
     "AUTHORIZED_HOSTS": [
       "localhost",
       "php.org",
@@ -71,8 +72,10 @@
         "{ROOT_PATH}",
         {
           "test": "TESTME",
-          "leMonke": "stinky"
-        }
+          "leMonke": "stinky",
+          "database": "{DB_NAME}"
+        },
+        "{CHOMAGE}"
       ]
     ]
   }

@@ -101,7 +101,6 @@ class ConfigurationManager
             $this->config = array_merge($constants, $variables);
 
             $this->replace_markups();
-
             $this->match_constants_with_config_names($constants);
             $this->match_variables_with_config_names($variables);
 
@@ -208,11 +207,7 @@ class ConfigurationManager
     private function replace_markups()
     {
         foreach ($this->config as $name => $value) {
-            if (gettype($value) == "string") {
-                $value = $this->replace_value($name, $value);
-            } else if (gettype($value) == "array") {
-                $value = $this->array_crawl($name, $value);
-            }
+            $value = $this->crawl($name, $value);
             $this->add_computed_value($name, $value);
         }
     }
@@ -228,6 +223,24 @@ class ConfigurationManager
         if (preg_match("/" . $this->opening_markup_string . "(.*?)" . $this->closing_markup_string . "/", $string, $matches))
             return str_replace([$this->opening_markup_string, $this->closing_markup_string], "", $matches[0]);
         return "";
+    }
+
+    /** Crawls through different kinds of objects.
+     * @param $name string name of the origin object
+     * @param $val mixed value of the currently crawled through object.
+     * @return mixed|string|string[]
+     * @author Nicolas Schwab
+     * @email nicolas.schwab@ceff.ch
+     */
+    private function crawl($name, $val) {
+        if (gettype($val) == "string") {
+            $val = $this->replace_value($name, $val);
+        } else if (gettype($val) == "array") {
+            $val = $this->array_crawl($name, $val);
+        } else if (gettype($val) == "object") {
+            $val = $this->object_crawl($name, $val);
+        }
+        return $val;
     }
 
     /** Replace markup by a value.
@@ -266,14 +279,22 @@ class ConfigurationManager
      */
     private function array_crawl($name, $value)
     {
-        $val = null;
         foreach ($value as $key => $val) {
-            if (gettype($val) == "string") {
-                $val = $this->replace_value($name, $val);
-            } else if (gettype($val) == "array") {
-                $val = $this->array_crawl($name, $val);
-            }
-            $value[$key] = $val;
+            $value[$key] = $this->crawl($name, $val);
+        }
+        return $value;
+    }
+
+    /** Crawls recursively through objects.
+     * @param $name string key name
+     * @param $value mixed initial value
+     * @return mixed final value
+     * @author Nicolas Schwab
+     * @email nicolas.schwab@ceff.ch
+     */
+    private function object_crawl($name, $value) {
+        foreach ($value as $key => $val) {
+            $value->$key = $this->crawl($name, $val);
         }
         return $value;
     }
